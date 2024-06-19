@@ -6,8 +6,9 @@ import pathlib
 import xlsxwriter
 import xlrd
 import numpy as np
-import openpyxl
+import openpyxl, re
 import matplotlib as mpl
+from scipy import interpolate
 
 pathGlobal = str(pathlib.Path(__file__).parent.resolve())
 
@@ -38,6 +39,12 @@ def split_arrays(elong, stress):
     return [elong_top, stress_top], [elong_bot, stress_bot]
 
 
+def interpolate_data(arr_s, arr_e, size=500):
+    interpolator = interpolate.interp1d(arr_e, arr_s)
+    new_e = np.linspace(arr_e[0], arr_e[-1], size)
+    new_s = interpolator(np.linspace(arr_s[0], arr_s[-1], size))
+    return new_e, new_s
+
 def compute_square(arr_s, arr_e):
     square = 0
     for i in np.arange(1, len(arr_s)):
@@ -55,12 +62,12 @@ if __name__ == '__main__':
     workbook = openpyxl.load_workbook('./res.xlsx')
     worksheet = workbook.active
     paths = [
-             'data/test'
-             #'data/гистерезис PVA',
-             # 'data/Гистерезис SIBS',
-             # 'data/Гистерезис перикадр',
-             # 'data/Полимеры'
-             ]
+             # 'data/test'
+             'data/гистерезис PVA',
+             'data/Гистерезис SIBS',
+             'data/Полимеры',
+             'data/Гистерезис перикадр'
+            ]
     saved_elongation_v1 = 0
     for path in paths:
         for file in glob(os.path.join(pathGlobal, path + '/*.xls'), recursive=True):
@@ -70,8 +77,94 @@ if __name__ == '__main__':
             for drop in drops:
                 sheets = [value for value in sheets if value != drop]
 
+            # draw loops in one plot
+            flag = ''
+            list_of_steps = list()
+            perecardium_set = list()
             for sheet in sheets:
+                temp = sheet.split('-')
 
+                temp_float = list()
+                for v in temp:
+                    try:
+                        temp_float.append(float(v.translate(str().maketrans(',', '.'))))
+                    except:
+                        pass
+                if len(temp_float) == 2:
+                    if flag == '':
+                        flag = 'poly'
+                    list_of_steps.append(sheet.split('-')[0])
+                    temp_float = list()
+                elif len(temp_float) == 4:
+                    if flag == '':
+                        flag = 'perecardium'
+                    perecardium_set.append(sheet)
+                    list_of_steps.append(sheet.split('-')[2])
+                    temp_float = list()
+
+            list_of_steps = np.array(list_of_steps)
+            perecardium_set = np.array(perecardium_set)
+            unique_steps = np.unique(list_of_steps)
+
+            for step in unique_steps:
+                if flag == 'poly':
+                    temp_sheet = list()
+                    indexes = np.argwhere(list_of_steps == step)
+                    range_of_cycles = np.arange(1, len(indexes)+1)
+                    for v in range_of_cycles:
+                        temp_sheet.append(str(step)+'-'+str(v))
+                else:
+                    res = list()
+                    for v in range(len(perecardium_set)):
+                        if re.search('-'+step+'-', perecardium_set[v]):
+                            res.append(True)
+                        else:
+                            res.append(False)
+                    temp_sheet = perecardium_set[res]
+                # print(f'step: {step} > {temp_sheet}')
+                # loc_ind = 0
+                curve = np.array([[0], [0]], dtype='float64')
+                is_saved = False
+                for t_sheet in temp_sheet:
+                    try:
+                        print(colors.OKGREEN + f'proc: {t_sheet}' + colors.ENDC, end=' > ')
+                        data_loaded = pd.read_excel(file, sheet_name=t_sheet)
+                        elongation = np.array(data_loaded.to_numpy()[2:, 0], dtype='float64')
+                        stress = np.array(data_loaded.to_numpy()[2:, 1], dtype='float64')
+                        stress[stress < 5e-4] = 0
+                        top_side, bot_side = split_arrays(elongation, stress)
+                        try:
+                            last = np.argwhere(top_side[1] == 0)[-1]
+                            top_side[1][:last[0]] = 0
+                        except:
+                            pass
+                        # top_side = top_side[:][0:3:-1]
+                        # bot_side = bot_side[:][0:3:-1]
+                        # del stress, elongation
+                        if not is_saved:
+                            curve = top_side
+                            is_saved = True
+                        else:
+                            curve = np.hstack((curve, top_side))
+
+                        curve = np.hstack((curve, bot_side))
+                        print(colors.OKGREEN + f'done' + colors.ENDC, end='\n')
+                    except:
+                        print(colors.FAIL + f'failed' + colors.ENDC, end='\n')
+                        pass
+
+                f = plt.figure(figsize=(15, 10))
+                plt.plot(curve[0], curve[1])
+                plt.savefig(f'./pics/{file.split("/")[-1].split(".")[0]}_{float(step.translate(str().maketrans(",", ".")))}.png')
+                plt.close()
+
+            # del temp_sheet, t_sheet, temp_float, top_side, temp, bot_side, curve, is_saved, last, stress, elongation
+            # del range_of_cycles, res, perecardium_set, unique_steps, list_of_steps, flag
+
+            # calc square and draw one-by-one
+            for sheet in sheets:
+                if not os.path.exists('./pics/one-by-one'):
+                    os.makedirs('./pics/one-by-one')
                 data_loaded = pd.read_excel(file, sheet_name=sheet)
                 elongation = np.array(data_loaded.to_numpy()[2:, 0], dtype='float64')
                 stress = np.array(data_loaded.to_numpy()[2:, 1], dtype='float64')
@@ -122,7 +215,7 @@ if __name__ == '__main__':
                 )
 
 
-                plt.savefig('./pics/' + file.split('/')[-1].split('.')[0] + '_' + sheet + '.jpg')
+                plt.savefig('./pics/one-by-one/' + file.split('/')[-1].split('.')[0] + '_' + sheet + '.jpg')
                 plt.close()
 
                 if sheet[-1] == '1':
