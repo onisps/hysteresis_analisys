@@ -58,7 +58,7 @@ def compute_square(arr_s, arr_e):
 
 if __name__ == '__main__':
     pd.set_option('max_colwidth', 50)
-    trim_coeff = 0.0001
+    trim_coeff = 0.0005
     if not os.path.exists('./pics'):
         os.makedirs('./pics')
     row = ['Дата изменения', 'Файл', 'Шаг', 'Цикл', 'Площадь',
@@ -81,6 +81,7 @@ if __name__ == '__main__':
     is_break = False
     for path in paths:
         for file in glob(os.path.join(pathGlobal, path + '/*.xls'), recursive=True):
+            print(colors.BOLD+colors.HEADER+f'current file is {file}!'+colors.ENDC)
             file_name = ""
             for v in (file.split('/')[-1]).split('.')[0:-1]:
                 file_name += f'{v} '
@@ -151,6 +152,8 @@ if __name__ == '__main__':
                         elongation = np.array(data_loaded.to_numpy()[2:, 0], dtype='float64')
                         stress = np.array(data_loaded.to_numpy()[2:, 1], dtype='float64')
                         # stress[stress < np.max(stress) * trim_coeff] = 0
+                        if stress[0] > 0:
+                            stress -= np.average(stress[0:100])
                         stress[stress < trim_coeff] = 0
                         top_side, bot_side = split_arrays(elongation, stress)
                         try:
@@ -212,7 +215,7 @@ if __name__ == '__main__':
                 except:
                     pass
 
-            del ind_to_delete, curve, f, top_side, bot_side, temp
+            # del curve, f, top_side, bot_side, temp
 
             # calc square and draw one-by-one
             for sheet in sheets:
@@ -228,6 +231,8 @@ if __name__ == '__main__':
                 elongation = np.array(data_loaded.to_numpy()[2:, 0], dtype='float64')
                 stress = np.array(data_loaded.to_numpy()[2:, 1], dtype='float64')
                 # stress[stress < np.max(stress) * trim_coeff] = 0
+                if stress[0] > 0:
+                    stress -= np.average(stress[0:100])
                 stress[stress < trim_coeff] = 0
                 top_side, bot_side = split_arrays(elongation, stress)
                 try:

@@ -4,7 +4,8 @@ from matplotlib import pyplot as plt
 import matplotlib as mpl
 
 if __name__ == '__main__':
-    file_name = 'res_stat.xlsx'
+    file_names = ['res_stat_by_math.xlsx', 'res_stat_one_by_one.xlsx']
+    file_name = file_names[1]
     data = pd.read_excel(file_name)
     materials = np.unique(data['Материал'].to_numpy())
     data_np = data.to_numpy()
@@ -12,6 +13,12 @@ if __name__ == '__main__':
     ind_titles = 3
 
     for curr_ind in np.arange(ind_titles, len(titles)):
+        if 'удлинение' in titles[curr_ind].lower() or 'деформация' in titles[curr_ind].lower() or 'расстояние' in titles[curr_ind].lower():
+            ylabel = 'Относительное удлинение, %'
+        elif 'напряжение' in titles[curr_ind].lower() or 'напряжения' in titles[curr_ind].lower():
+            ylabel = 'Напряжение, МПа'
+        elif 'площадь' in titles[curr_ind].lower():
+            ylabel = 'Площадь, МПа*мм/мм'
         f = plt.figure(figsize=(15, 10))
         mpl.rcParams['axes.spines.right'] = False
         mpl.rcParams['axes.spines.top'] = False
@@ -21,6 +28,8 @@ if __name__ == '__main__':
             plt.plot(steps, curr_data[:, curr_ind])
         plt.legend(materials)
         plt.title(f'{titles[curr_ind]}')
+        plt.xlabel('Удлинение, %')
+        plt.ylabel(ylabel)
         plt.savefig(f'./pics/{titles[curr_ind]}.png')
 
     print(data)
