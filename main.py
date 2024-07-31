@@ -61,13 +61,13 @@ if __name__ == '__main__':
     trim_coeff = 0.0005
     if not os.path.exists('./pics'):
         os.makedirs('./pics')
-    row = ['Дата изменения', 'Файл', 'Шаг', 'Цикл', 'Площадь',
-           'Накопленное удлинение vs 1', 'Накопленное удлинение vs prev',
-           'Удлинение петли', 'Удлинение из 0 начала петли',
-           'Деградация напряжение vs 1', 'Деградация напряжения vs prev',
-           'Макс напряжение']
-    res = pd.DataFrame(columns=row)
-    res.to_excel('./res.xlsx', startrow=0, startcol=-1, sheet_name='descriptive')
+    # row = ['Дата изменения', 'Файл', 'Шаг', 'Цикл', 'Площадь',
+    #        'Накопленное удлинение vs 1', 'Накопленное удлинение vs prev',
+    #        'Удлинение петли', 'Удлинение из 0 начала петли',
+    #        'Деградация напряжение vs 1', 'Деградация напряжения vs prev',
+    #        'Макс напряжение']
+    # res = pd.DataFrame(columns=row)
+    # res.to_excel('./res.xlsx', startrow=0, startcol=-1, sheet_name='descriptive')
     workbook = openpyxl.load_workbook('./res.xlsx')
     worksheet = workbook.active
     paths = [

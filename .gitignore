@@ -1,7 +1,3 @@
-/.idea/
-/.venv/
-/data/
-/pics/
-/pics_old/
-/*.xlsx
-/*.zip
+/.venv
+/data
+/pics

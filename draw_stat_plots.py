@@ -24,8 +24,11 @@ if __name__ == '__main__':
         mpl.rcParams['axes.spines.top'] = False
         for mat in materials:
             curr_data = data_np[data_np[:, 1] == mat, :]
-            steps = curr_data[:, 2]
-            plt.plot(steps, curr_data[:, curr_ind])
+            steps = np.unique(curr_data[:, 2])
+            plot_data = list()
+            for step in steps:
+                plot_data.append(np.average(curr_data[curr_data[:,2] == step,curr_ind]))
+            plt.plot(steps, plot_data)
         plt.legend(materials)
         plt.title(f'{titles[curr_ind]}')
         plt.xlabel('Удлинение, %')
