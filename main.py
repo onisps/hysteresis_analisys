@@ -67,7 +67,7 @@ if __name__ == '__main__':
            'Накопленное удлинение vs 1', 'Накопленное удлинение vs prev',
            'Удлинение петли', 'Удлинение из 0 начала петли',
            'Деградация напряжение vs 1', 'Деградация напряжения vs prev',
-           'Макс напряжение', 'Emod нагрузки', 'Emod разгрузки']
+           'Макс напряжение', 'Emod нагрузки', 'Emod разгрузки', 'Emod секущий']
     res = pd.DataFrame(columns=row)
     res.to_excel('./res.xlsx', startrow=0, startcol=-1, sheet_name='descriptive')
     workbook = openpyxl.load_workbook('./res.xlsx')
@@ -243,10 +243,10 @@ if __name__ == '__main__':
                 # ind_to_delete = np.argwhere(top_side[1, :] == 0)
                 # top_side = np.delete(top_side, ind_to_delete, axis=1)
 
-                # data_frame_top = pd.DataFrame(np.array(top_side).T)
-                # data_frame_bot = pd.DataFrame(np.array(bot_side).T)
-                # data_frame_top.to_csv(f'./csv/{file.split("/")[-1].split(".")[0]}/load_curve_{sheet}.csv')
-                # data_frame_bot.to_csv(f'./csv/{file.split("/")[-1].split(".")[0]}/unload_curve_{sheet}.csv')
+                data_frame_top = pd.DataFrame(np.array(top_side).T)
+                data_frame_bot = pd.DataFrame(np.array(bot_side).T)
+                data_frame_top.to_csv(f'./csv/{file.split("/")[-1].split(".")[0]}/load_curve_{sheet}.csv')
+                data_frame_bot.to_csv(f'./csv/{file.split("/")[-1].split(".")[0]}/unload_curve_{sheet}.csv')
                 try:
                     last = np.argwhere(top_side[1] == 0)[-1]
                     top_side[1][:last[0]] = 0
@@ -291,8 +291,11 @@ if __name__ == '__main__':
                 #
                 # plt.savefig(f'./pics/one-by-one/{file_name}/' + file_name + '_' + sheet + '.jpg')
                 # plt.close()
-                e_mod_load = (top_side[1][-1] - top_side[1][0]) / (top_side[0][-1] - top_side[0][0])
-                e_mod_unload = (bot_side[1][0] - bot_side[1][-1]) / (bot_side[0][0] - bot_side[0][-1])
+                ind_load_start = np.argwhere(top_side[1] > 0)[0][0]
+                e_mod_load = ((top_side[1][-1] - top_side[1][ind_load_start]) /
+                              (top_side[0][-1] - top_side[0][ind_load_start])*100)
+                e_mod_true = (top_side[1][-1]) / (top_side[0][-1])*100
+                e_mod_unload = (bot_side[1][0] - bot_side[1][-1]) / (bot_side[0][0] - bot_side[0][-1])*100
                 if sheet[-1] == '1':
                     row = [
                         time.ctime(os.path.getctime(file)),
@@ -325,7 +328,8 @@ if __name__ == '__main__':
                         top_side[1][-1] - saved_stress,
                         np.max(top_side[1]),
                         e_mod_load,
-                        e_mod_unload
+                        e_mod_unload,
+                        e_mod_true
                     ]
                 saved_elongation = top_side[0][-1]
                 saved_stress = top_side[1][-1]
