@@ -105,7 +105,3 @@ This software is officially registered as a computer program in the Russian Fede
 All rights reserved by the author(s). Unauthorized copying, distribution, or modification of the code is prohibited without the explicit permission of the copyright holder.
 
 For academic use, citation of the registration number and author(s) is required. For commercial use or licensing inquiries, please contact the author directly.
-
----
-
-Let me know if you want this to be generated directly as a Markdown file, or if you want the README localized (e.g., in Russian), or adapted to a specific structure (e.g., for a lab or publication).
