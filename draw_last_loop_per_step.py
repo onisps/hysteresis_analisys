@@ -28,6 +28,12 @@ if __name__ == '__main__':
         os.makedirs(os.path.join(pathGlobal, 'pics', 'last_loops_by_step'))
     # via https://matplotlib.org/stable/_images/sphx_glr_named_colors_003.png
     color_dict = [
+        '#048F98',
+        '#6CA0DF',
+        '#7459C1',
+        'tab:green',
+        'tab:blue',
+        'gold',
         'darkgrey',
         'lightgrey',
         'lightcoral',
@@ -55,7 +61,10 @@ if __name__ == '__main__':
         'deeppink',
         'crimson'
     ]
-    subfolders = [x[0] for x in os.walk(os.path.join(pathGlobal, 'csv'))][1:]
+    # subfolders = [x[0] for x in os.walk(os.path.join(pathGlobal, 'csv'))][1:]
+    subfolders = ['E:\\work\\python\\hysteresis_analisys\\csv\\17_02_2025 гистерезис  12 PVA 146-186 DMSO-H2O = 60-40 1 loop 1',
+                  'E:\\work\\python\\hysteresis_analisys\\csv\\17_02_2025 гистерезис  12 PVA 146-186 1 loop 2',
+                  'E:\\work\\python\\hysteresis_analisys\\csv\\31_07_2024 гистерезис PVA-CNT-L 2']
     steps = [10, 20, 30, 40, 50, 75, 100, 150, 200]
     for step in steps:
         max_load = 0

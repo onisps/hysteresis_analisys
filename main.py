@@ -69,11 +69,12 @@ if __name__ == '__main__':
            'Деградация напряжение vs 1', 'Деградация напряжения vs prev',
            'Макс напряжение', 'Emod нагрузки', 'Emod разгрузки', 'Emod секущий']
     res = pd.DataFrame(columns=row)
-    res.to_excel('./res.xlsx', startrow=0, startcol=-1, sheet_name='descriptive')
-    workbook = openpyxl.load_workbook('./res.xlsx')
+    res.to_excel('./res_q1.xlsx', startrow=0, startcol=-1, sheet_name='descriptive')
+    workbook = openpyxl.load_workbook('./res_q1.xlsx')
     worksheet = workbook.active
     paths = [
-        'data'
+        'q1_data'
+        #'data'
         # 'data/гистерезис PVA',
         # 'data/Гистерезис SIBS',
         # 'data/Полимеры',
@@ -82,18 +83,19 @@ if __name__ == '__main__':
     saved_elongation_v1 = 0
     is_break = False
     for path in paths:
-        for file in glob(os.path.join(pathGlobal, path + '/*.xls'), recursive=True):
+        for full_file in glob(os.path.join(pathGlobal, path + '/*.xls'), recursive=True):
+            file = full_file.split('\\')[-1]
             print(colors.BOLD+colors.HEADER+f'current file is {file}!'+colors.ENDC)
-            file_name = ""
-            for v in (file.split('/')[-1]).split('.')[0:-1]:
-                file_name += f'{v} '
-            if not os.path.exists(f'./pics/line/{file_name}'):
-                os.makedirs(f'./pics/line/{file_name}')
-            if not os.path.exists(f'./pics/scatter/{file_name}'):
-                os.makedirs(f'./pics/scatter/{file_name}')
-            if not os.path.exists(f'./pics/one-by-one/{file_name}'):
-                os.makedirs(f'./pics/one-by-one/{file_name}')
-            data = pd.ExcelFile(file)
+            file_name = file
+            # for v in (file.split('/')[-1]).split('.')[0:-1]:
+            #     file_name += f'{v} '
+            # if not os.path.exists(f'./pics/line/{file_name}'):
+            #     os.makedirs(f'./pics/line/{file_name}')
+            # if not os.path.exists(f'./pics/scatter/{file_name}'):
+            #     os.makedirs(f'./pics/scatter/{file_name}')
+            # if not os.path.exists(f'./pics/one-by-one/{file_name}'):
+            #     os.makedirs(f'./pics/one-by-one/{file_name}')
+            data = pd.ExcelFile(os.path.join(pathGlobal,path,file))
             drops = ['Параметры', 'Результаты', 'Статистика']
             sheets = data.sheet_names
             for drop in drops:
@@ -225,7 +227,7 @@ if __name__ == '__main__':
                     os.makedirs(f'./csv/{file.split("/")[-1].split(".")[0]}')
                 if not os.path.exists('./pics/one-by-one'):
                     os.makedirs('./pics/one-by-one')
-                data_loaded = pd.read_excel(file, sheet_name=sheet)
+                data_loaded = pd.read_excel(os.path.join(pathGlobal,path,file), sheet_name=sheet)
                 if data_loaded.to_numpy()[np.argmax(data_loaded.to_numpy()[2:, 1]), 0] < np.max(data_loaded.to_numpy()[2:, 0]) - 5:
                     print(colors.FAIL + f'Failed with {file_name} -> {sheet}! '
                                         f'{data_loaded.to_numpy()[np.argmax(data_loaded.to_numpy()[2:, 1]), 0]} but limit '
@@ -298,7 +300,7 @@ if __name__ == '__main__':
                 e_mod_unload = (bot_side[1][0] - bot_side[1][-1]) / (bot_side[0][0] - bot_side[0][-1])*100
                 if sheet[-1] == '1':
                     row = [
-                        time.ctime(os.path.getctime(file)),
+                        time.ctime(os.path.getctime(os.path.join(pathGlobal,path,file))),
                         file_name,
                         sheet.split('-')[0],
                         sheet.split('-')[1],
@@ -315,7 +317,7 @@ if __name__ == '__main__':
                     ]
                 else:
                     row = [
-                        time.ctime(os.path.getctime(file)),
+                        time.ctime(os.path.getctime(os.path.join(pathGlobal,path,file))),
                         file_name,
                         sheet.split('-')[0],
                         sheet.split('-')[1],
@@ -334,6 +336,6 @@ if __name__ == '__main__':
                 saved_elongation = top_side[0][-1]
                 saved_stress = top_side[1][-1]
                 worksheet.append(row)
-                workbook.save('./res.xlsx')
+                workbook.save('./res_q1.xlsx')
             # if is_break:
             #     break

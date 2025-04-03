@@ -18,12 +18,12 @@ def comma_format(x, p):
 pathGlobal = str(pathlib.Path(__file__).parent.resolve())
 
 if __name__ == '__main__':
-    if not os.path.exists(os.path.join(pathGlobal, 'pics', 'all_loops')):
-        os.makedirs(os.path.join(pathGlobal, 'pics', 'all_loops'))
+    if not os.path.exists(os.path.join(pathGlobal, 'pics', 'all_loops_new')):
+        os.makedirs(os.path.join(pathGlobal, 'pics', 'all_loops_new'))
     # if not os.path.exists(os.path.join(pathGlobal, 'pics', '3_last_loops')):
     #     os.makedirs(os.path.join(pathGlobal, 'pics', '3_last_loops'))
     subfolders = [x[0] for x in os.walk(os.path.join(pathGlobal, 'csv'))][1:]
-    steps = [10, 20, 30, 40, 50, 75, 100, 150, 200]
+    steps = [10, 20, 30, 40, 50, 75]
     for folder in subfolders:
         load_list = glob(os.path.join(pathGlobal, folder + '/load*.csv'), recursive=True)
         unload_list = glob(os.path.join(pathGlobal, folder + '/unload*.csv'), recursive=True)
@@ -38,6 +38,8 @@ if __name__ == '__main__':
             max_load_for_draw = 0
             max_elong = 0
             for load_file, unload_file in zip(load_list, unload_list):
+                if int(load_file.split('_')[-1].split('-')[0]) > 80:
+                        continue
                 data_load = pd.read_csv(load_file)
                 data_load = data_load.to_numpy()[:, 1:].T
                 data_unload = pd.read_csv(unload_file)
@@ -66,7 +68,7 @@ if __name__ == '__main__':
             plt.yticks(np.arange(0, np.ceil(max_load_for_draw)*2, (np.ceil(max_load_for_draw)*2)/20))
             plt.ylim(0, np.ceil(max_load_for_draw))
             f.savefig(os.path.join(pathGlobal,
-                                   'pics/all_loops',
+                                   'pics/all_loops_new',
                                    str(" ").join(folder.split("/")[-1].split(".")[0].split(" ")[2:-1])+'.png'),
                       dpi=350)
             plt.close()
